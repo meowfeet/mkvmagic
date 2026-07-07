@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use anyhow::Result;
 use clap::Parser;
 use walkdir::WalkDir;
@@ -28,11 +30,15 @@ impl App {
     pub fn run(&self) -> Result<()> {
         for entry in WalkDir::new(&self.args.input) {
             let entry = entry?;
-            if entry.file_type().is_file() {
+            if entry.file_type().is_file() && is_mkv(entry.path()) {
                 self.probe.run(entry.path())?;
             }
         }
 
         Ok(())
     }
+}
+
+fn is_mkv(path: impl AsRef<Path>) -> bool {
+    path.as_ref().extension().is_some_and(|ext| ext.eq_ignore_ascii_case("mkv"))
 }
