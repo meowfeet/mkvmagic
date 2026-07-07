@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
+use walkdir::WalkDir;
 
 use crate::binaries::Binaries;
 use crate::cli::Args;
@@ -25,7 +26,12 @@ impl App {
     }
 
     pub fn run(&self) -> Result<()> {
-        let _ = self.probe.run(&self.args.input)?;
+        for entry in WalkDir::new(&self.args.input) {
+            let entry = entry?;
+            if entry.file_type().is_file() {
+                self.probe.run(entry.path())?;
+            }
+        }
 
         Ok(())
     }
